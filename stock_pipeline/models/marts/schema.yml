@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: mart_daily_ohlcv
+    description: "Daily OHLCV summary per ticker"
+    columns:
+      - name: ticker
+        tests:
+          - not_null
+      - name: trade_date
+        tests:
+          - not_null
+      - name: close_price
+        tests:
+          - not_null
+
+  - name: mart_moving_averages
+    description: "7 and 20 day moving averages with trend signal"
+    columns:
+      - name: trend_signal
+        tests:
+          - accepted_values:
+              values: ['bullish', 'bearish', 'neutral']
+
+  - name: mart_rsi
+    description: "RSI 14 with overbought/oversold signals"
+    columns:
+      - name: rsi_signal
+        tests:
+          - accepted_values:
+              values: ['overbought', 'oversold', 'neutral']
+
+  - name: mart_volume_anomaly
+    description: "Tickers with abnormal volume"
+    columns:
+      - name: ticker
+        tests:
+          - not_null

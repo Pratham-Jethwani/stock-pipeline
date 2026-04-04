@@ -18,60 +18,51 @@ logger = logging.getLogger(__name__)
 
 TICKERS = [
     # IT & technology (10)
-    "TCS.NS",       "INFY.NS",      "WIPRO.NS",     "HCLTECH.NS",   "TECHM.NS",
-    "LTM.NS",      "MPHASIS.NS",   "PERSISTENT.NS","COFORGE.NS",   "OFSS.NS",
-
+    "TCS.NS",        "INFY.NS",       "WIPRO.NS",      "HCLTECH.NS",    "TECHM.NS",
+    "LTM.NS",        "MPHASIS.NS",    "PERSISTENT.NS", "COFORGE.NS",    "OFSS.NS",
     # banking (8)
-    "HDFCBANK.NS",  "ICICIBANK.NS", "KOTAKBANK.NS", "SBIN.NS",      "AXISBANK.NS",
-    "INDUSINDBK.NS","BANDHANBNK.NS","FEDERALBNK.NS",
-
+    "HDFCBANK.NS",   "ICICIBANK.NS",  "KOTAKBANK.NS",  "SBIN.NS",       "AXISBANK.NS",
+    "INDUSINDBK.NS", "BANDHANBNK.NS", "FEDERALBNK.NS",
     # finance & NBFC (5)
-    "BAJFINANCE.NS","BAJAJFINSV.NS","HDFCLIFE.NS",  "SBILIFE.NS",   "CHOLAFIN.NS",
-
+    "BAJFINANCE.NS", "BAJAJFINSV.NS", "HDFCLIFE.NS",   "SBILIFE.NS",    "CHOLAFIN.NS",
     # oil, gas & energy (5)
-    "RELIANCE.NS",  "ONGC.NS",      "IOC.NS",       "BPCL.NS",      "POWERGRID.NS",
-
+    "RELIANCE.NS",   "ONGC.NS",       "IOC.NS",        "BPCL.NS",       "POWERGRID.NS",
     # automobile (5)
-    "MARUTI.NS",    "TMCV.NS","M&M.NS",       "BAJAJ-AUTO.NS","EICHERMOT.NS",
-
+    "MARUTI.NS",     "TMCV.NS",       "M&M.NS",        "BAJAJ-AUTO.NS", "EICHERMOT.NS",
     # pharma & healthcare (5)
-    "SUNPHARMA.NS", "DRREDDY.NS",   "CIPLA.NS",     "DIVISLAB.NS",  "APOLLOHOSP.NS",
-
+    "SUNPHARMA.NS",  "DRREDDY.NS",    "CIPLA.NS",      "DIVISLAB.NS",   "APOLLOHOSP.NS",
     # FMCG & consumer (5)
-    "HINDUNILVR.NS","ITC.NS",       "NESTLEIND.NS", "BRITANNIA.NS", "DABUR.NS",
-
+    "HINDUNILVR.NS", "ITC.NS",        "NESTLEIND.NS",  "BRITANNIA.NS",  "DABUR.NS",
     # metals & mining (4)
-    "TATASTEEL.NS", "JSWSTEEL.NS",  "HINDALCO.NS",  "COALINDIA.NS",
-
+    "TATASTEEL.NS",  "JSWSTEEL.NS",   "HINDALCO.NS",   "COALINDIA.NS",
     # infrastructure & cement (4)
-    "ULTRACEMCO.NS","GRASIM.NS",    "ADANIPORTS.NS","LT.NS",
-
+    "ULTRACEMCO.NS", "GRASIM.NS",     "ADANIPORTS.NS", "LT.NS",
     # telecom & media (3)
-    "BHARTIARTL.NS","IDEA.NS",      "ZEEL.NS",
+    "BHARTIARTL.NS", "IDEA.NS",       "ZEEL.NS",
 ]
 
 def delivery_report(err, msg):
     if err is not None:
         logger.error(f"delivery failed for {msg.key()}: {err}")
     else:
-        logger.info(f"delivered to {msg.topic()} partition {msg.partition()} offset {msg.offset()}")
+        logger.info(f"delivered to {msg.topic()} partition [{msg.partition()}] offset {msg.offset()}")
 
 def validate_tick(ticker, data):
     if data is None or data.empty:
         logger.warning(f"{ticker}: no data returned")
         return None
 
-    # flatten MultiIndex columns if present (yfinance returns MultiIndex with auto_adjust)
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
-
-    row = data.iloc[-1]
 
     required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
     for col in required_cols:
         if col not in data.columns:
             logger.warning(f"{ticker}: missing column {col}, skipping")
             return None
+
+    # use second last row to avoid incomplete current candle
+    row = data.iloc[-2] if len(data) >= 2 else data.iloc[-1]
 
     if row[required_cols].isnull().any():
         logger.warning(f"{ticker}: null values found, skipping")
@@ -87,15 +78,14 @@ def validate_tick(ticker, data):
 
     return {
         "ticker":      ticker,
-        "timestamp":   data.index[-1].isoformat(),
-        "open":        round(float(row['Open']),  4),
-        "high":        round(float(row['High']),  4),
-        "low":         round(float(row['Low']),   4),
-        "close":       round(float(row['Close']), 4),
+        "timestamp":   data.index[-2].isoformat() if len(data) >= 2 else data.index[-1].isoformat(),
+        "open_price":        round(float(row['Open']),  4),
+        "high_price":        round(float(row['High']),  4),
+        "low_price":         round(float(row['Low']),   4),
+        "close_price":       round(float(row['Close']), 4),
         "volume":      int(row['Volume']),
         "ingested_at": datetime.utcnow().isoformat() + "Z"
     }
-
 
 def fetch_and_produce(producer):
     logger.info(f"fetching data for {len(TICKERS)} tickers...")
@@ -106,14 +96,13 @@ def fetch_and_produce(producer):
         try:
             data = yf.download(
                 ticker,
-                period="1d",
+                period="5d",
                 interval="1m",
                 progress=False,
                 auto_adjust=True,
-                group_by="ticker"   # prevents MultiIndex ambiguity
+                group_by="ticker"
             )
 
-            # if group_by="ticker" is used, drill into the ticker level
             if isinstance(data.columns, pd.MultiIndex):
                 data = data[ticker] if ticker in data.columns.get_level_values(0) else data
                 data.columns = data.columns.get_level_values(0) if isinstance(data.columns, pd.MultiIndex) else data.columns
@@ -144,22 +133,23 @@ def main():
 
     try:
         while True:
-            now = datetime.utcnow()
-            # only run during market hours (Mon-Fri, 13:30–20:00 UTC = 9:30–4pm EST)
-            is_weekday = now.weekday() < 5
-            market_open  = now.replace(hour=13, minute=30, second=0, microsecond=0)
-            market_close = now.replace(hour=20, minute=0,  second=0, microsecond=0)
-            is_market_hours = market_open <= now <= market_close
+            import pytz
+            ist = pytz.timezone('Asia/Kolkata')
+            now_ist = datetime.now(ist)
 
-            # if is_weekday and is_market_hours:
-            #     fetch_and_produce(producer)
-            #     logger.info("sleeping 60 seconds until next fetch...")
-            #     time.sleep(60)
-            # else:
-            #     logger.info("market closed — sleeping 5 minutes...")
-            #     time.sleep(300)
-            fetch_and_produce(producer)
-            time.sleep(60)  
+            is_weekday    = now_ist.weekday() < 5
+            market_open   = now_ist.replace(hour=9,  minute=15, second=0, microsecond=0)
+            market_close  = now_ist.replace(hour=15, minute=30, second=0, microsecond=0)
+            is_market_hours = market_open <= now_ist <= market_close
+
+            if is_weekday and is_market_hours:
+                logger.info(f"market open — IST {now_ist.strftime('%H:%M:%S')}")
+                fetch_and_produce(producer)
+                logger.info("sleeping 60 seconds...")
+                time.sleep(60)
+            else:
+                logger.info(f"market closed — IST {now_ist.strftime('%H:%M:%S')} — sleeping 5 minutes...")
+                time.sleep(300)
 
     except KeyboardInterrupt:
         logger.info("producer stopped by user")
