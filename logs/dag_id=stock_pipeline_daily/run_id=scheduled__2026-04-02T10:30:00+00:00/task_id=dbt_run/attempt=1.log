@@ -1,0 +1,26 @@
+[2026-04-04T15:57:45.691+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stock_pipeline_daily.dbt_run scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T15:57:45.693+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stock_pipeline_daily.dbt_run scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T15:57:45.693+0000] {taskinstance.py:2171} INFO - Starting attempt 1 of 3
+[2026-04-04T15:57:45.696+0000] {taskinstance.py:2192} INFO - Executing <Task(BashOperator): dbt_run> on 2026-04-02 10:30:00+00:00
+[2026-04-04T15:57:45.698+0000] {standard_task_runner.py:60} INFO - Started process 2816 to run task
+[2026-04-04T15:57:45.699+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'stock_pipeline_daily', 'dbt_run', 'scheduled__2026-04-02T10:30:00+00:00', '--job-id', '31', '--raw', '--subdir', 'DAGS_FOLDER/stock_pipeline_dag.py', '--cfg-path', '/tmp/tmp72kreobo']
+[2026-04-04T15:57:45.702+0000] {standard_task_runner.py:88} INFO - Job 31: Subtask dbt_run
+[2026-04-04T15:57:45.719+0000] {task_command.py:423} INFO - Running <TaskInstance: stock_pipeline_daily.dbt_run scheduled__2026-04-02T10:30:00+00:00 [running]> on host 67a8c525ce44
+[2026-04-04T15:57:45.743+0000] {taskinstance.py:2481} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='pratham' AIRFLOW_CTX_DAG_ID='stock_pipeline_daily' AIRFLOW_CTX_TASK_ID='dbt_run' AIRFLOW_CTX_EXECUTION_DATE='2026-04-02T10:30:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-04-02T10:30:00+00:00'
+[2026-04-04T15:57:45.744+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-04-04T15:57:45.744+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/***/project/stock_pipeline && /opt/***/project/venv/bin/dbt run --profiles-dir ~/.dbt']
+[2026-04-04T15:57:45.748+0000] {subprocess.py:86} INFO - Output:
+[2026-04-04T15:57:45.749+0000] {subprocess.py:93} INFO - /usr/bin/bash: line 1: /opt/***/project/venv/bin/dbt: cannot execute: required file not found
+[2026-04-04T15:57:45.749+0000] {subprocess.py:97} INFO - Command exited with return code 127
+[2026-04-04T15:57:45.754+0000] {taskinstance.py:2699} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/bash.py", line 212, in execute
+    raise AirflowException(
+airflow.exceptions.AirflowException: Bash command failed. The command returned a non-zero exit code 127.
+[2026-04-04T15:57:45.756+0000] {taskinstance.py:1138} INFO - Marking task as UP_FOR_RETRY. dag_id=stock_pipeline_daily, task_id=dbt_run, execution_date=20260402T103000, start_date=20260404T155745, end_date=20260404T155745
+[2026-04-04T15:57:45.759+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 31 for task dbt_run (Bash command failed. The command returned a non-zero exit code 127.; 2816)
+[2026-04-04T15:57:45.798+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-04-04T15:57:45.808+0000] {taskinstance.py:3281} INFO - 0 downstream tasks scheduled from follow-on schedule check

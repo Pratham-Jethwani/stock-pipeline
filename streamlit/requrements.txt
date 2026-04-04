@@ -3,4 +3,3 @@ plotly
 pandas
 redshift-connector
 python-dotenv
-sqlalchemy
