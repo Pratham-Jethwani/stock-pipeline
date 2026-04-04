@@ -1,0 +1,13 @@
+stock_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: redshift
+      host: stock-pipeline-workgroup.531262218370.ap-south-1.redshift-serverless.amazonaws.com
+      port: 5439
+      user: admin
+      password: Philomena123
+      dbname: dev
+      schema: public
+      threads: 4
+      connect_timeout: 30

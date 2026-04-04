@@ -132,25 +132,8 @@ def main():
     producer = Producer(PRODUCER_CONFIG)
 
     try:
-        while True:
-            import pytz
-            ist = pytz.timezone('Asia/Kolkata')
-            now_ist = datetime.now(ist)
-
-            is_weekday    = now_ist.weekday() < 5
-            market_open   = now_ist.replace(hour=9,  minute=15, second=0, microsecond=0)
-            market_close  = now_ist.replace(hour=15, minute=30, second=0, microsecond=0)
-            is_market_hours = market_open <= now_ist <= market_close
-
-            if is_weekday and is_market_hours:
-                logger.info(f"market open — IST {now_ist.strftime('%H:%M:%S')}")
-                fetch_and_produce(producer)
-                logger.info("sleeping 60 seconds...")
-                time.sleep(60)
-            else:
-                logger.info(f"market closed — IST {now_ist.strftime('%H:%M:%S')} — sleeping 5 minutes...")
-                time.sleep(300)
-
+        fetch_and_produce(producer)
+        logger.info("historical backfill complete")
     except KeyboardInterrupt:
         logger.info("producer stopped by user")
     finally:

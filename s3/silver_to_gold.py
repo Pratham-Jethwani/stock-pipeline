@@ -13,6 +13,7 @@ from s3.s3_helper import get_s3_client, BUCKET, silver_key, gold_key
 
 load_dotenv()
 
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'

@@ -1,8 +1,11 @@
 import redshift_connector
 from dotenv import dotenv_values
 
+import os
+ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+
 def get_connection():
-    v = dotenv_values('/Users/pratham/Desktop/stock-pipeline/.env')
+    v = dotenv_values(ENV_PATH)
     return redshift_connector.connect(
         host=v.get('REDSHIFT_HOST'),
         database=v.get('REDSHIFT_DB'),

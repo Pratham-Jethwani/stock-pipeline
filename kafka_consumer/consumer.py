@@ -55,19 +55,18 @@ def main():
 
     consumer.subscribe([TOPIC])
 
-    # buffer: { ticker: [list of events] }
     buffer = defaultdict(list)
 
+    # run for fixed time then exit — works for both manual and airflow runs
+    import time
+    run_duration = 120  # run for 2 minutes
+    start_time   = time.time()
+
     try:
-        while True:
+        while time.time() - start_time < run_duration:
             msg = consumer.poll(timeout=1.0)
 
             if msg is None:
-                # flush any remaining buffered messages
-                for ticker, messages in buffer.items():
-                    if messages:
-                        write_to_bronze(s3_client, ticker, messages)
-                buffer.clear()
                 continue
 
             if msg.error():
@@ -77,25 +76,45 @@ def main():
                     logger.error(f"consumer error: {msg.error()}")
                     continue
 
-            # parse the message
-            event  = json.loads(msg.value().decode('utf-8'))
-            ticker = event['ticker']
+            raw = msg.value()
+            if not raw:
+                consumer.commit(msg)
+                continue
+
+            try:
+                event = json.loads(raw.decode('utf-8'))
+            except json.JSONDecodeError as e:
+                logger.warning(f"skipping malformed message: {e}")
+                consumer.commit(msg)
+                continue
+
+            ticker = event.get('ticker')
+            if not ticker:
+                logger.warning("skipping message with no ticker field")
+                consumer.commit(msg)
+                continue
+
             buffer[ticker].append(event)
 
-            # write to s3 when batch is full
             if len(buffer[ticker]) >= BATCH_SIZE:
                 write_to_bronze(s3_client, ticker, buffer[ticker])
                 buffer[ticker] = []
 
-            # manually commit offset after successful s3 write
             consumer.commit(msg)
+
+        # flush remaining buffer
+        logger.info("time limit reached — flushing remaining buffer to s3...")
+        for ticker, messages in buffer.items():
+            if messages:
+                write_to_bronze(s3_client, ticker, messages)
+
+        logger.info("consumer finished successfully")
 
     except KeyboardInterrupt:
         logger.info("consumer stopped — flushing remaining buffer...")
         for ticker, messages in buffer.items():
             if messages:
                 write_to_bronze(s3_client, ticker, messages)
-        logger.info("buffer flushed")
     finally:
         consumer.close()
 

@@ -1,0 +1,53 @@
+[2026-04-04T15:47:42.083+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce manual__2026-04-04T15:47:41.311012+00:00 [queued]>
+[2026-04-04T15:47:42.088+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce manual__2026-04-04T15:47:41.311012+00:00 [queued]>
+[2026-04-04T15:47:42.088+0000] {taskinstance.py:2171} INFO - Starting attempt 1 of 3
+[2026-04-04T15:47:42.095+0000] {taskinstance.py:2192} INFO - Executing <Task(PythonOperator): fetch_and_produce> on 2026-04-04 15:47:41.311012+00:00
+[2026-04-04T15:47:42.099+0000] {standard_task_runner.py:60} INFO - Started process 1837 to run task
+[2026-04-04T15:47:42.102+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'stock_pipeline_daily', 'fetch_and_produce', 'manual__2026-04-04T15:47:41.311012+00:00', '--job-id', '19', '--raw', '--subdir', 'DAGS_FOLDER/stock_pipeline_dag.py', '--cfg-path', '/tmp/tmpemtx54nh']
+[2026-04-04T15:47:42.110+0000] {standard_task_runner.py:88} INFO - Job 19: Subtask fetch_and_produce
+[2026-04-04T15:47:42.149+0000] {task_command.py:423} INFO - Running <TaskInstance: stock_pipeline_daily.fetch_and_produce manual__2026-04-04T15:47:41.311012+00:00 [running]> on host 67a8c525ce44
+[2026-04-04T15:47:42.202+0000] {taskinstance.py:2481} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='pratham' AIRFLOW_CTX_DAG_ID='stock_pipeline_daily' AIRFLOW_CTX_TASK_ID='fetch_and_produce' AIRFLOW_CTX_EXECUTION_DATE='2026-04-04T15:47:41.311012+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-04-04T15:47:41.311012+00:00'
+[2026-04-04T15:49:33.063+0000] {local_task_job_runner.py:302} WARNING - State of this instance has been externally set to None. Terminating instance.
+[2026-04-04T15:49:33.069+0000] {process_utils.py:131} INFO - Sending 15 to group 1837. PIDs of all processes in the group: [1838, 1837]
+[2026-04-04T15:49:33.070+0000] {process_utils.py:86} INFO - Sending the signal 15 to group 1837
+[2026-04-04T15:49:33.070+0000] {taskinstance.py:2451} ERROR - Received SIGTERM. Terminating subprocesses.
+[2026-04-04T15:49:33.100+0000] {taskinstance.py:2699} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 31, in task_producer
+    run_script(f'{PROJECT_DIR}/ingestion/producer.py')
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 20, in run_script
+    result = subprocess.run(
+             ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 2108, in _communicate
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 2453, in signal_handler
+    raise AirflowException("Task received SIGTERM signal")
+airflow.exceptions.AirflowException: Task received SIGTERM signal
+[2026-04-04T15:49:33.108+0000] {taskinstance.py:1138} INFO - Marking task as UP_FOR_RETRY. dag_id=stock_pipeline_daily, task_id=fetch_and_produce, execution_date=20260404T154741, start_date=20260404T154742, end_date=20260404T154933
+[2026-04-04T15:49:33.121+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 19 for task fetch_and_produce ((psycopg2.errors.ForeignKeyViolation) insert or update on table "task_fail" violates foreign key constraint "task_fail_ti_fkey"
+DETAIL:  Key (dag_id, task_id, run_id, map_index)=(stock_pipeline_daily, fetch_and_produce, manual__2026-04-04T15:47:41.311012+00:00, -1) is not present in table "task_instance".
+
+[SQL: INSERT INTO task_fail (task_id, dag_id, run_id, map_index, start_date, end_date, duration) VALUES (%(task_id)s, %(dag_id)s, %(run_id)s, %(map_index)s, %(start_date)s, %(end_date)s, %(duration)s) RETURNING task_fail.id]
+[parameters: {'task_id': 'fetch_and_produce', 'dag_id': 'stock_pipeline_daily', 'run_id': 'manual__2026-04-04T15:47:41.311012+00:00', 'map_index': -1, 'start_date': datetime.datetime(2026, 4, 4, 15, 47, 42, 83756, tzinfo=Timezone('UTC')), 'end_date': datetime.datetime(2026, 4, 4, 15, 49, 33, 107038, tzinfo=Timezone('UTC')), 'duration': 111}]
+(Background on this error at: https://sqlalche.me/e/14/gkpj); 1837)
+[2026-04-04T15:49:33.170+0000] {process_utils.py:79} INFO - Process psutil.Process(pid=1837, status='terminated', exitcode=1, started='15:47:41') (1837) terminated with exit code 1
+[2026-04-04T15:49:33.171+0000] {process_utils.py:79} INFO - Process psutil.Process(pid=1838, status='terminated', started='15:47:41') (1838) terminated with exit code None

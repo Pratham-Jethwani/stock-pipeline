@@ -3,8 +3,10 @@ import os
 from datetime import date
 from dotenv import dotenv_values
 
+ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+
 def get_connection():
-    v = dotenv_values('/Users/pratham/Desktop/stock-pipeline/.env')
+    v = dotenv_values(ENV_PATH)
     return redshift_connector.connect(
         host=v.get('REDSHIFT_HOST'),
         database=v.get('REDSHIFT_DB'),
@@ -14,8 +16,8 @@ def get_connection():
     )
 
 def main():
+    v        = dotenv_values(ENV_PATH)
     today    = date.today().isoformat()
-    v        = dotenv_values('/Users/pratham/Desktop/stock-pipeline/.env')
     bucket   = v.get('S3_BUCKET_NAME')
     role_arn = v.get('REDSHIFT_IAM_ROLE_ARN')
     gold_path = f"s3://{bucket}/gold/{today}/daily_summary.parquet"

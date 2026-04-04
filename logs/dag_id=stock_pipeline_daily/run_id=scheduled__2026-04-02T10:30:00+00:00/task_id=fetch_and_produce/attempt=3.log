@@ -1,0 +1,80 @@
+[2026-04-04T07:52:27.054+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T07:52:27.063+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T07:52:27.064+0000] {taskinstance.py:2171} INFO - Starting attempt 3 of 3
+[2026-04-04T07:52:27.076+0000] {taskinstance.py:2192} INFO - Executing <Task(PythonOperator): fetch_and_produce> on 2026-04-02 10:30:00+00:00
+[2026-04-04T07:52:27.078+0000] {standard_task_runner.py:60} INFO - Started process 354 to run task
+[2026-04-04T07:52:27.080+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'stock_pipeline_daily', 'fetch_and_produce', 'scheduled__2026-04-02T10:30:00+00:00', '--job-id', '6', '--raw', '--subdir', 'DAGS_FOLDER/stock_pipeline_dag.py', '--cfg-path', '/tmp/tmprn8w71rb']
+[2026-04-04T07:52:27.082+0000] {standard_task_runner.py:88} INFO - Job 6: Subtask fetch_and_produce
+[2026-04-04T07:52:27.117+0000] {task_command.py:423} INFO - Running <TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [running]> on host caa7af26cad9
+[2026-04-04T07:52:27.165+0000] {taskinstance.py:2481} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='pratham' AIRFLOW_CTX_DAG_ID='stock_pipeline_daily' AIRFLOW_CTX_TASK_ID='fetch_and_produce' AIRFLOW_CTX_EXECUTION_DATE='2026-04-02T10:30:00+00:00' AIRFLOW_CTX_TRY_NUMBER='3' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-04-02T10:30:00+00:00'
+[2026-04-04T07:52:27.170+0000] {taskinstance.py:2699} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 31, in task_producer
+    run_script(f'{PROJECT_DIR}/ingestion/producer.py')
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 20, in run_script
+    result = subprocess.run(
+  File "/usr/local/lib/python3.8/subprocess.py", line 493, in run
+    with Popen(*popenargs, **kwargs) as process:
+  File "/usr/local/lib/python3.8/subprocess.py", line 858, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/local/lib/python3.8/subprocess.py", line 1720, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/airflow/project/venv/bin/python'
+[2026-04-04T07:52:27.179+0000] {taskinstance.py:1138} INFO - Marking task as FAILED. dag_id=stock_pipeline_daily, task_id=fetch_and_produce, execution_date=20260402T103000, start_date=20260404T075227, end_date=20260404T075227
+[2026-04-04T07:52:27.188+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 6 for task fetch_and_produce ([Errno 2] No such file or directory: '/opt/airflow/project/venv/bin/python'; 354)
+[2026-04-04T07:52:27.218+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-04-04T07:52:27.242+0000] {taskinstance.py:3281} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-04-04T15:48:30.976+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T15:48:30.982+0000] {taskinstance.py:1957} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [queued]>
+[2026-04-04T15:48:30.983+0000] {taskinstance.py:2171} INFO - Starting attempt 3 of 5
+[2026-04-04T15:48:30.991+0000] {taskinstance.py:2192} INFO - Executing <Task(PythonOperator): fetch_and_produce> on 2026-04-02 10:30:00+00:00
+[2026-04-04T15:48:30.995+0000] {standard_task_runner.py:60} INFO - Started process 1996 to run task
+[2026-04-04T15:48:30.999+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'stock_pipeline_daily', 'fetch_and_produce', 'scheduled__2026-04-02T10:30:00+00:00', '--job-id', '20', '--raw', '--subdir', 'DAGS_FOLDER/stock_pipeline_dag.py', '--cfg-path', '/tmp/tmpw9lmxm00']
+[2026-04-04T15:48:31.006+0000] {standard_task_runner.py:88} INFO - Job 20: Subtask fetch_and_produce
+[2026-04-04T15:48:31.045+0000] {task_command.py:423} INFO - Running <TaskInstance: stock_pipeline_daily.fetch_and_produce scheduled__2026-04-02T10:30:00+00:00 [running]> on host 67a8c525ce44
+[2026-04-04T15:48:31.098+0000] {taskinstance.py:2481} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='pratham' AIRFLOW_CTX_DAG_ID='stock_pipeline_daily' AIRFLOW_CTX_TASK_ID='fetch_and_produce' AIRFLOW_CTX_EXECUTION_DATE='2026-04-02T10:30:00+00:00' AIRFLOW_CTX_TRY_NUMBER='3' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-04-02T10:30:00+00:00'
+[2026-04-04T15:48:41.083+0000] {local_task_job_runner.py:280} WARNING - Recorded pid 2033 does not match the current pid 1996
+[2026-04-04T15:48:41.086+0000] {process_utils.py:131} INFO - Sending 15 to group 1996. PIDs of all processes in the group: [1997, 1996]
+[2026-04-04T15:48:41.086+0000] {process_utils.py:86} INFO - Sending the signal 15 to group 1996
+[2026-04-04T15:48:41.087+0000] {taskinstance.py:2451} ERROR - Received SIGTERM. Terminating subprocesses.
+[2026-04-04T15:48:41.109+0000] {taskinstance.py:2699} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 31, in task_producer
+    run_script(f'{PROJECT_DIR}/ingestion/producer.py')
+  File "/opt/airflow/dags/stock_pipeline_dag.py", line 20, in run_script
+    result = subprocess.run(
+             ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/subprocess.py", line 2108, in _communicate
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 2453, in signal_handler
+    raise AirflowException("Task received SIGTERM signal")
+airflow.exceptions.AirflowException: Task received SIGTERM signal
+[2026-04-04T15:48:41.114+0000] {taskinstance.py:1138} INFO - Marking task as UP_FOR_RETRY. dag_id=stock_pipeline_daily, task_id=fetch_and_produce, execution_date=20260402T103000, start_date=20260404T154836, end_date=20260404T154841
+[2026-04-04T15:48:41.125+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 20 for task fetch_and_produce (Task received SIGTERM signal; 1996)
+[2026-04-04T15:48:41.143+0000] {process_utils.py:79} INFO - Process psutil.Process(pid=1996, status='terminated', exitcode=1, started='15:48:30') (1996) terminated with exit code 1
+[2026-04-04T15:48:41.144+0000] {process_utils.py:79} INFO - Process psutil.Process(pid=1997, status='terminated', started='15:48:30') (1997) terminated with exit code None

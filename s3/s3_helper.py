@@ -2,7 +2,11 @@ import boto3
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+
+
+import os
+ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+load_dotenv(ENV_PATH)
 
 def get_s3_client():
     return boto3.client(

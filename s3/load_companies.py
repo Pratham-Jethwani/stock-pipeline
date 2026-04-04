@@ -3,6 +3,7 @@ import yfinance as yf
 from dotenv import dotenv_values
 import time
 
+
 def get_connection():
     v = dotenv_values('/Users/pratham/Desktop/stock-pipeline/.env')
     return redshift_connector.connect(
