@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 target/
 dbt_project/logs/logs/
+logs/
