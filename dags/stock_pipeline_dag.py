@@ -1,13 +1,12 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.utils.task_group import TaskGroup
 from datetime import datetime, timedelta
 import subprocess
-import sys
-import os
 
 PROJECT_DIR = '/opt/airflow/project'
-PYTHON = '/usr/local/bin/python'  
+PYTHON      = '/usr/local/bin/python'
 
 default_args = {
     'owner':            'pratham',
@@ -31,9 +30,7 @@ def task_producer():
     run_script(f'{PROJECT_DIR}/ingestion/producer.py')
 
 def task_consumer():
-    import time
     run_script(f'{PROJECT_DIR}/kafka_consumer/consumer.py')
-     # wait 2 mins for consumer to flush to s3
 
 def task_bronze_to_silver():
     run_script(f'{PROJECT_DIR}/s3/bronze_to_silver.py')
@@ -44,34 +41,28 @@ def task_silver_to_gold():
 def task_load_to_redshift():
     run_script(f'{PROJECT_DIR}/s3/load_to_redshift.py')
 
-# DAG 1 — runs during market hours every 60 seconds
 with DAG(
-    dag_id='stock_intraday_producer',
-    schedule_interval='* 3-10 * * 1-5',  # every minute 9:15–15:30 IST
+    dag_id='stock_market_day',
+    schedule_interval='15 3 * * 1-5',  # 9:15 AM IST = 3:15 UTC
     start_date=datetime(2026, 1, 1),
     catchup=False,
-) as dag1:
+    default_args=default_args,
+) as dag:
 
-    t1 = PythonOperator(
-        task_id='fetch_and_produce',
-        python_callable=task_producer,
-    )
+    # producer and consumer run in parallel
+    with TaskGroup('intraday_collection') as intraday:
+        t1 = PythonOperator(
+            task_id='producer',
+            python_callable=task_producer,
+            execution_timeout=timedelta(hours=7),
+        )
+        t2 = PythonOperator(
+            task_id='consumer',
+            python_callable=task_consumer,
+            execution_timeout=timedelta(hours=7),
+        )
 
-    t2 = PythonOperator(
-        task_id='consume_to_bronze',
-        python_callable=task_consumer,
-    )
-
-    t1 >> t2
-
-# DAG 2 — runs once after market close
-with DAG(
-    dag_id='stock_daily_processing',
-    schedule_interval='30 10 * * 1-5',  # 4 PM IST
-    start_date=datetime(2026, 1, 1),
-    catchup=False,
-) as dag2:
-
+    # EOD processing runs after both producer and consumer exit
     t3 = PythonOperator(
         task_id='bronze_to_silver',
         python_callable=task_bronze_to_silver,
@@ -93,4 +84,10 @@ with DAG(
         bash_command='cd /opt/airflow/project/stock_pipeline && dbt test --profiles-dir /opt/airflow/project/stock_pipeline',
     )
 
-    t3 >> t4 >> t5 >> t6 >> t7
+    intraday >> t3 >> t4 >> t5 >> t6 >> t7
+    
+    
+    
+    
+    
+    
