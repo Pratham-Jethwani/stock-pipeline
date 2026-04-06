@@ -10,7 +10,7 @@ from datetime import date, timedelta
 ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
 
 st.set_page_config(
-    page_title="NSE Stock Pipeline Dashboard",
+    page_title="My Portfolio",
     page_icon="📈",
     layout="wide"
 )
@@ -47,7 +47,7 @@ def run_query(query):
     return pd.DataFrame(rows, columns=cols)
 
 # sidebar
-st.sidebar.title("NSE Stock Pipeline")
+st.sidebar.title("My Portfolio")
 st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
@@ -397,15 +397,15 @@ elif page == "Pipeline Health":
         dates_df = run_query("""
             SELECT
                 'staging_stock_ticks' as table_name,
-                MAX(trade_date) as latest_date,
-                COUNT(DISTINCT trade_date) as trading_days,
+                MAX(trade_date::varchar) as latest_date,
+                COUNT(DISTINCT trade_date::varchar) as trading_days,
                 COUNT(DISTINCT ticker) as tickers
             FROM staging_stock_ticks
             UNION ALL
             SELECT
                 'mart_daily_ohlcv',
-                MAX(trade_date),
-                COUNT(DISTINCT trade_date),
+                MAX(trade_date::varchar),
+                COUNT(DISTINCT trade_date::varchar),
                 COUNT(DISTINCT ticker)
             FROM mart_daily_ohlcv
         """)
