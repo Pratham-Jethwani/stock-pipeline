@@ -1,9 +1,8 @@
 # NSE Stock Market Analytics Pipeline
 
-
 An end-to-end real-time data pipeline that ingests live OHLCV data for 50+ NSE tickers, processes it through a Medallion architecture on AWS S3, transforms it with dbt Core, orchestrates daily runs via Apache Airflow, and visualizes insights on a live Streamlit dashboard.
 
-**Live Dashboard:** [stock-pipeline.streamlit.app](https://your-url.streamlit.app)
+**Live Dashboard:** [stock-pipeline.streamlit.app](https://stock-pipeline-1910.streamlit.app/)
 
 ---
 
@@ -52,17 +51,17 @@ yfinance (NSE data)
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Data Source | yfinance (Yahoo Finance API) |
-| Message Queue | Apache Kafka (Docker) |
-| Data Lake | AWS S3 (Medallion Architecture) |
-| Data Warehouse | AWS Redshift Serverless |
-| Transformation | dbt Core |
-| Orchestration | Apache Airflow (Docker) |
-| Dashboard | Streamlit Cloud |
-| Language | Python 3.11 |
-| Infrastructure | Docker, Docker Compose |
+| Layer          | Technology                      |
+| -------------- | ------------------------------- |
+| Data Source    | yfinance (Yahoo Finance API)    |
+| Message Queue  | Apache Kafka (Docker)           |
+| Data Lake      | AWS S3 (Medallion Architecture) |
+| Data Warehouse | AWS Redshift Serverless         |
+| Transformation | dbt Core                        |
+| Orchestration  | Apache Airflow (Docker)         |
+| Dashboard      | Streamlit Cloud                 |
+| Language       | Python 3.11                     |
+| Infrastructure | Docker, Docker Compose          |
 
 ---
 
@@ -113,50 +112,50 @@ stock-pipeline/
 
 ### Tickers — 50 NSE Stocks across 10 Sectors
 
-| Sector | Tickers |
-|---|---|
+| Sector          | Tickers                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------- |
 | IT & Technology | TCS, Infosys, Wipro, HCL Tech, Tech Mahindra, LTIMindtree, Mphasis, Persistent, Coforge, OFSS |
-| Banking | HDFC Bank, ICICI Bank, Kotak Bank, SBI, Axis Bank, IndusInd, Bandhan, Federal Bank |
-| Finance & NBFC | Bajaj Finance, Bajaj Finserv, HDFC Life, SBI Life, Cholamandalam |
-| Oil & Energy | Reliance, ONGC, IOC, BPCL, Power Grid |
-| Automobile | Maruti, Tata Motors CV, M&M, Bajaj Auto, Eicher Motors |
-| Pharma | Sun Pharma, Dr Reddy's, Cipla, Divi's Lab, Apollo Hospitals |
-| FMCG | HUL, ITC, Nestle, Britannia, Dabur |
-| Metals & Mining | Tata Steel, JSW Steel, Hindalco, Coal India |
-| Infrastructure | UltraTech, Grasim, Adani Ports, L&T |
-| Telecom & Media | Bharti Airtel, Vodafone Idea, Zee Entertainment |
+| Banking         | HDFC Bank, ICICI Bank, Kotak Bank, SBI, Axis Bank, IndusInd, Bandhan, Federal Bank            |
+| Finance & NBFC  | Bajaj Finance, Bajaj Finserv, HDFC Life, SBI Life, Cholamandalam                              |
+| Oil & Energy    | Reliance, ONGC, IOC, BPCL, Power Grid                                                         |
+| Automobile      | Maruti, Tata Motors CV, M&M, Bajaj Auto, Eicher Motors                                        |
+| Pharma          | Sun Pharma, Dr Reddy's, Cipla, Divi's Lab, Apollo Hospitals                                   |
+| FMCG            | HUL, ITC, Nestle, Britannia, Dabur                                                            |
+| Metals & Mining | Tata Steel, JSW Steel, Hindalco, Coal India                                                   |
+| Infrastructure  | UltraTech, Grasim, Adani Ports, L&T                                                           |
+| Telecom & Media | Bharti Airtel, Vodafone Idea, Zee Entertainment                                               |
 
 ### Data Collected per Ticker
 
 ```json
 {
-  "ticker":      "TCS.NS",
-  "timestamp":   "2026-04-06T09:16:00+05:30",
-  "open_price":  3812.50,
-  "high_price":  3819.00,
-  "low_price":   3810.00,
+  "ticker": "TCS.NS",
+  "timestamp": "2026-04-06T09:16:00+05:30",
+  "open_price": 3812.5,
+  "high_price": 3819.0,
+  "low_price": 3810.0,
   "close_price": 3815.75,
-  "volume":      14250,
+  "volume": 14250,
   "ingested_at": "2026-04-06T03:46:05.123Z"
 }
 ```
 
 ### Medallion Architecture
 
-| Layer | Format | Content |
-|---|---|---|
-| Bronze | JSON | Raw tick events, partitioned by `date/ticker` |
-| Silver | Parquet | Cleaned, typed, deduplicated 1-min candles |
-| Gold | Parquet | Daily OHLCV summary + computed indicators |
+| Layer  | Format  | Content                                       |
+| ------ | ------- | --------------------------------------------- |
+| Bronze | JSON    | Raw tick events, partitioned by `date/ticker` |
+| Silver | Parquet | Cleaned, typed, deduplicated 1-min candles    |
+| Gold   | Parquet | Daily OHLCV summary + computed indicators     |
 
 ### Computed Indicators
 
-| Indicator | Description |
-|---|---|
-| MA 7 | 7-period moving average of close price |
-| MA 20 | 20-period moving average of close price |
-| RSI 14 | 14-period Relative Strength Index |
-| Daily Return | `(close - open) / open × 100` |
+| Indicator      | Description                                |
+| -------------- | ------------------------------------------ |
+| MA 7           | 7-period moving average of close price     |
+| MA 20          | 20-period moving average of close price    |
+| RSI 14         | 14-period Relative Strength Index          |
+| Daily Return   | `(close - open) / open × 100`              |
 | Volume Anomaly | `True` if volume > 2× average daily volume |
 
 ---
@@ -181,11 +180,13 @@ All mart models have schema tests — `not_null`, `unique`, `accepted_values`.
 ## Airflow DAGs
 
 ### DAG 1 — `stock_intraday_producer`
+
 - **Schedule:** Every minute, Mon–Fri, 9:15–15:30 IST
 - **Tasks:** `fetch_and_produce` → `consume_to_bronze`
 - Collects all 390 intraday candles throughout the trading day
 
 ### DAG 2 — `stock_daily_processing`
+
 - **Schedule:** 4:00 PM IST, Mon–Fri (after market close)
 - **Tasks:** `bronze_to_silver` → `silver_to_gold` → `load_to_redshift` → `dbt_run` → `dbt_test`
 - Processes and loads the full day's data into Redshift
@@ -196,31 +197,30 @@ Both DAGs have retry logic (2 retries, 5-minute delay) on every task.
 
 ## Streamlit Dashboard Pages
 
-| Page | Description |
-|---|---|
-| Market Overview | Gainers, losers, sector performance heatmap |
-| Stock Analysis | Candlestick chart with MA7/MA20 overlay + volume |
-| RSI Signals | RSI bar chart with overbought/oversold zones |
-| Volume Anomalies | Tickers with unusual trading activity |
-| Pipeline Health | Row counts, data freshness, sector distribution |
-
+| Page             | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| Market Overview  | Gainers, losers, sector performance heatmap      |
+| Stock Analysis   | Candlestick chart with MA7/MA20 overlay + volume |
+| RSI Signals      | RSI bar chart with overbought/oversold zones     |
+| Volume Anomalies | Tickers with unusual trading activity            |
+| Pipeline Health  | Row counts, data freshness, sector distribution  |
 
 ---
 
-
 ## Known Limitations & Production Improvements
 
-| Current | Production |
-|---|---|
-| Airflow runs locally on Mac | AWS MWAA or EC2 instance |
-| Kafka runs in Docker locally | AWS MSK (Managed Kafka) |
-| Single Kafka broker | Multi-broker cluster for HA |
-| Manual credential management | AWS Secrets Manager |
-| No data quality alerting | Great Expectations + PagerDuty |
+| Current                      | Production                     |
+| ---------------------------- | ------------------------------ |
+| Airflow runs locally on Mac  | AWS MWAA or EC2 instance       |
+| Kafka runs in Docker locally | AWS MSK (Managed Kafka)        |
+| Single Kafka broker          | Multi-broker cluster for HA    |
+| Manual credential management | AWS Secrets Manager            |
+| No data quality alerting     | Great Expectations + PagerDuty |
 
 ---
 
 ## Author
 
 **Pratham Jethwani**
+
 - Dashboard: [Live URL](https://stock-pipeline-1910.streamlit.app/)
