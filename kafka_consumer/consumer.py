@@ -28,26 +28,35 @@ def write_to_bronze(s3_client, ticker, messages):
     today = date.today().isoformat()
     key   = bronze_key(ticker, today)
 
-    # read existing file if it exists, append new messages
+    # read existing file if it exists
     existing = []
     try:
-        obj = s3_client.get_object(Bucket=BUCKET, Key=key)
+        obj      = s3_client.get_object(Bucket=BUCKET, Key=key)
         existing = json.loads(obj['Body'].read().decode('utf-8'))
-    except s3_client.exceptions.NoSuchKey:
-        pass
     except Exception:
         pass
 
+    # deduplicate by timestamp before writing
     existing.extend(messages)
+    seen       = set()
+    deduped    = []
+    for event in existing:
+        ts = event.get('timestamp')
+        tk = event.get('ticker')
+        key_str = f"{tk}_{ts}"
+        if key_str not in seen:
+            seen.add(key_str)
+            deduped.append(event)
 
     s3_client.put_object(
         Bucket=BUCKET,
-        Key=key,
-        Body=json.dumps(existing, indent=2).encode('utf-8'),
+        Key=bronze_key(ticker, today),
+        Body=json.dumps(deduped, indent=2).encode('utf-8'),
         ContentType='application/json'
     )
-    logger.info(f"bronze: wrote {len(messages)} events for {ticker} to s3://{BUCKET}/{key}")
+    logger.info(f"bronze: wrote {len(messages)} events for {ticker} — total {len(deduped)} unique events today")
 
+    
 def main():
     logger.info("starting kafka consumer → bronze layer...")
     consumer  = Consumer(CONSUMER_CONFIG)
