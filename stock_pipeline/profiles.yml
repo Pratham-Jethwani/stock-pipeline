@@ -10,4 +10,5 @@ stock_pipeline:
       dbname: dev
       schema: public
       threads: 4
-      connect_timeout: 30
+      connect_timeout: 300
+      ra3_node: true

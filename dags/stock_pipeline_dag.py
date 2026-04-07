@@ -77,7 +77,10 @@ with DAG(
     )
     t6 = BashOperator(
         task_id='dbt_run',
-        bash_command='cd /opt/airflow/project/stock_pipeline && dbt run --profiles-dir /opt/airflow/project/stock_pipeline',
+        bash_command='''
+            cd /opt/airflow/project/stock_pipeline &&
+            dbt run --profiles-dir /opt/airflow/project/stock_pipeline --threads 1
+        ''',
     )
     t7 = BashOperator(
         task_id='dbt_test',
